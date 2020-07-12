@@ -7,6 +7,7 @@ import (
 )
 
 type CompetencyDocument struct {
+	ID          string   `json:"id"`
 	Title       string   `json:"title"`
 	TitleSearch string   `json:"titleSearch"`
 	Levels      []*Level `json:"levels"`

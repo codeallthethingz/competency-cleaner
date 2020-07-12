@@ -9,13 +9,13 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-func CloneRepo() error {
+func CloneRepo() (string, error) {
 	os.RemoveAll("/tmp/competencies")
 	_, err := git.PlainClone("/tmp/competencies", false, &git.CloneOptions{
 		URL: "https://github.com/searchspring/competencies",
 	})
 
-	return err
+	return "/tmp/competencies/competencies/", err
 }
 
 type BadCompetencyDocument struct {
@@ -40,6 +40,7 @@ func ProcessCompetencies(dir string) ([]*CompetencyDocument, []*BadCompetencyDoc
 			if err != nil {
 				return nil, nil, err
 			}
+			doc.ID = "competencies/" + file.Name()
 			reasons := validateCompetency(doc)
 			if len(reasons) == 0 {
 				good = append(good, doc)
