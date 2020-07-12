@@ -9,6 +9,9 @@ import (
 )
 
 func TestRepoContract(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
 	err := CloneRepo()
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +67,7 @@ func TestProcessCompetencies(t *testing.T) {
 	require.Equal(t, "level 1 must have summary", bad[0].Reasons[3])
 }
 
-func TestValidate(t *testing.T){
+func TestValidate(t *testing.T) {
 	reasons := validateCompetency(&CompetencyDocument{})
 	require.Equal(t, "no levels", reasons[1])
 }
