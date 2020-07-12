@@ -46,47 +46,40 @@ func Convert(text string) (*CompetencyDocument, error) {
 	proveRegex := regexp.MustCompile(`(?i)##[^#]*how do you prove it.*`)
 	improveRegex := regexp.MustCompile(`(?i)##[^#]*how do you improve it.*`)
 	for _, line := range lines {
-		fmt.Print("\n" + line + " --> ")
-		if mainHeadingRegex.Match([]byte(line)) && matching {
-			doc.Levels = append(doc.Levels, currentMatcher)
-			currentMatcher = &Level{}
-			fmt.Print("matched header")
-			matching = true
-			matchingProve = false
-			matchingImprove = false
-			continue
-		}
 		if mainHeadingRegex.Match([]byte(line)) {
-			fmt.Print("matched header")
-			matching = true
-			matchingProve = false
-			matchingImprove = false
-			continue
+			if matching {
+				doc.Levels = append(doc.Levels, currentMatcher)
+				currentMatcher = &Level{}
+				matching = true
+				matchingProve = false
+				matchingImprove = false
+				continue
+			} else {
+				matching = true
+				matchingProve = false
+				matchingImprove = false
+				continue
+			}
 		}
 		if matching && proveRegex.Match([]byte(line)) {
-			fmt.Print("matched prove")
 			matchingProve = true
 			matchingImprove = false
 			continue
 		}
 		if matching && improveRegex.Match([]byte(line)) {
-			fmt.Print("matched improve")
 			matchingProve = false
 			matchingImprove = true
 			continue
 		}
 		if matching && matchingProve {
-			fmt.Print("prove line")
 			currentMatcher.Prove += line + "\n"
 			continue
 		}
 		if matching && matchingImprove {
-			fmt.Print("improve line")
 			currentMatcher.Improve += line + "\n"
 			continue
 		}
 		if matching {
-			fmt.Print("summary line")
 			currentMatcher.Summary += line + "\n"
 		}
 	}
