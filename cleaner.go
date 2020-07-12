@@ -46,7 +46,6 @@ func Convert(text string) (*CompetencyDocument, error) {
 	proveRegex := regexp.MustCompile(`(?i)##[^#]*how do you prove it.*`)
 	improveRegex := regexp.MustCompile(`(?i)##[^#]*how do you improve it.*`)
 	for _, line := range lines {
-		fmt.Print("\n" + line + " --> ")
 		if mainHeadingRegex.Match([]byte(line)) && matching {
 			doc.Levels = append(doc.Levels, currentMatcher)
 			currentMatcher = &Level{}
