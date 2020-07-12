@@ -10,11 +10,8 @@ import (
 )
 
 func CloneRepo() error {
-	err := os.RemoveAll("/tmp/competencies")
-	if err != nil {
-		return err
-	}
-	_, err = git.PlainClone("/tmp/competencies", false, &git.CloneOptions{
+	os.RemoveAll("/tmp/competencies")
+	_, err := git.PlainClone("/tmp/competencies", false, &git.CloneOptions{
 		URL: "https://github.com/searchspring/competencies",
 	})
 
