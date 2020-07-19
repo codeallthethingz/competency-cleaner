@@ -36,6 +36,12 @@ func Convert(text string) (*CompetencyDocument, error) {
 	if strings.HasPrefix(title, "#") {
 		title = strings.TrimSpace(title[1:])
 	}
+	if strings.HasPrefix(strings.TrimSpace(strings.ToLower(title)), "competency") {
+		title = strings.TrimSpace(title[10:])
+	}
+	if strings.HasPrefix(strings.TrimSpace(strings.ToLower(title)), "-") {
+		title = strings.TrimSpace(title[1:])
+	}
 	doc.Title = title
 	doc.TitleSearch = strings.ToLower(title)
 

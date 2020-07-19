@@ -21,6 +21,20 @@ func TestProcessor(t *testing.T) {
 	require.Equal(t, "improve 2 text", doc.Levels[1].Improve)
 	require.Equal(t, "level 2 summary", doc.Levels[1].Summary)
 }
+
+func TestPrefixRemoved(t *testing.T) {
+	doc, err := Convert("\n#Competency Github Competency  \nfirst\nsummary\n\n## How do you prove it?\nprove it\ntext\n## How do you improve it?\nimprove text\n# Github - Level 2\nlevel 2 summary\n##How do you prove it?\nprove 2 text\n## How do you improve it?\nimprove 2 text\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	require.Equal(t, "Github", doc.Title)
+	doc, err = Convert("\n#Competency - Github Competency  \nfirst\nsummary\n\n## How do you prove it?\nprove it\ntext\n## How do you improve it?\nimprove text\n# Github - Level 2\nlevel 2 summary\n##How do you prove it?\nprove 2 text\n## How do you improve it?\nimprove 2 text\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	require.Equal(t, "Github", doc.Title)
+}
+
 func TestNoSummary(t *testing.T) {
 	doc, err := Convert("\n#Github Competency\n\n## How do you prove it?\nprove it\ntext\n## How do you improve it?\nimprove text\n# Github - Level 2\n##How do you prove it?\nprove 2 text\n## How do you improve it?\nimprove 2 text\n")
 	if err != nil {
