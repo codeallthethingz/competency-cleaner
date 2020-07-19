@@ -1,13 +1,17 @@
 package compclean
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+)
 
 func Drive() error {
 	dir, err := CloneRepo()
 	if err != nil {
 		return err
 	}
-	_, bad, err := ProcessCompetencies(dir)
+	good, bad, err := ProcessCompetencies(dir)
 	if err != nil {
 		return err
 	}
@@ -18,6 +22,13 @@ func Drive() error {
 		}
 		return fmt.Errorf("Found non-zero number of bad competencies: %d bad\n%s", len(bad), msg)
 	}
-
+	content, err := json.Marshal(good)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile("competencies.json", content, 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
