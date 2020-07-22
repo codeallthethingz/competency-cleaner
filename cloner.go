@@ -40,7 +40,7 @@ func ProcessCompetencies(dir string) ([]*CompetencyDocument, []*BadCompetencyDoc
 			if err != nil {
 				return nil, nil, err
 			}
-			doc.ID = "competencies/" + file.Name()
+			doc.Path = "competencies/" + file.Name()
 			reasons := validateCompetency(doc)
 			if len(reasons) == 0 {
 				good = append(good, doc)

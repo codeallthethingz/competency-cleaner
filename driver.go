@@ -18,7 +18,7 @@ func Drive() error {
 	if len(bad) > 0 {
 		msg := ""
 		for _, b := range bad {
-			msg += fmt.Sprintf("https://github.com/searchspring/competencies/blob/master/%s    %s\n", b.Document.ID, b.Reasons)
+			msg += fmt.Sprintf("https://github.com/searchspring/competencies/blob/master/%s    %s\n", b.Document.Path, b.Reasons)
 		}
 		return fmt.Errorf("Found non-zero number of bad competencies: %d bad\n%s", len(bad), msg)
 	}
