@@ -24,33 +24,64 @@ type BadCompetencyDocument struct {
 }
 
 func ProcessCompetencies(dir string) ([]*CompetencyDocument, []*BadCompetencyDocument, error) {
+
+	goodResults := []*CompetencyDocument{}
+	badResults := []*BadCompetencyDocument{}
+
+	good := make(chan *CompetencyDocument)
+	bad := make(chan *BadCompetencyDocument)
+	errChan := make(chan error)
+	quit := make(chan int)
+	go func() {
+		ProcessCompetenciesWithChannel(dir, good, bad, errChan, quit)
+	}()
+	finished := false
+	for !finished {
+		select {
+		case gc := <-good:
+			goodResults = append(goodResults, gc)
+		case bc := <-bad:
+			badResults = append(badResults, bc)
+		case err := <-errChan:
+			return nil, nil, err
+		case <-quit:
+			finished = true
+		}
+	}
+	return goodResults, badResults, nil
+}
+
+func ProcessCompetenciesWithChannel(dir string, good chan *CompetencyDocument, bad chan *BadCompetencyDocument, errChan chan error, quit chan int) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return nil, nil, err
+		errChan <- err
+		quit <- 0
+		return
 	}
-	good := []*CompetencyDocument{}
-	bad := []*BadCompetencyDocument{}
 	for _, file := range files {
 		if strings.HasSuffix(file.Name(), ".md") {
 			contents, err := ioutil.ReadFile(dir + file.Name())
 			if err != nil {
-				return nil, nil, err
+				errChan <- err
+				quit <- 0
+				return
 			}
 			doc, err := Convert(string(contents))
 			if err != nil {
-				return nil, nil, err
+				errChan <- err
+				quit <- 0
+				return
 			}
 			doc.Path = "competencies/" + file.Name()
 			reasons := validateCompetency(doc)
 			if len(reasons) == 0 {
-				good = append(good, doc)
+				good <- doc
 			} else {
-				bad = append(bad, &BadCompetencyDocument{Document: doc, Reasons: reasons})
+				bad <- &BadCompetencyDocument{Document: doc, Reasons: reasons}
 			}
-
 		}
 	}
-	return good, bad, nil
+	quit <- 0
 }
 
 func validateCompetency(doc *CompetencyDocument) []string {
