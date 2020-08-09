@@ -33,23 +33,9 @@ func TestRepoContract(t *testing.T) {
 }
 
 func TestProcessCompetencies(t *testing.T) {
-	dir, err := ioutil.TempDir("/tmp", "compcleanertest")
-	if err != nil {
-		t.Fatal(err)
-	}
+	dir := createTempCompetencies(false)
 	defer os.RemoveAll(dir)
-	err = os.MkdirAll(dir+"/competencies/competencies", 0777)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile(dir+"/competencies/competencies/github.md", []byte("# Github Competency\ngithub is great\n## how do you prove it?\nmake a branch\n## How do you improve it?\nread the docs"), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = ioutil.WriteFile(dir+"/competencies/competencies/mentorship.md", []byte("# "), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	good, bad, err := ProcessCompetencies(dir + "/competencies/competencies/")
 	if err != nil {
 		t.Fatal(err)
@@ -72,4 +58,60 @@ func TestProcessCompetencies(t *testing.T) {
 func TestValidate(t *testing.T) {
 	reasons := validateCompetency(&CompetencyDocument{})
 	require.Equal(t, "no levels", reasons[1])
+}
+
+func TestWithChannel(t *testing.T) {
+	dir := createTempCompetencies(true)
+	defer os.RemoveAll(dir)
+
+	good := make(chan *CompetencyDocument)
+	bad := make(chan *BadCompetencyDocument)
+	errChan := make(chan error)
+	quit := make(chan int)
+	go func() {
+		ProcessCompetenciesWithChannel(dir+"/competencies/competencies/", good, bad, errChan, quit)
+	}()
+	goodCount, badCount, errCount := 0, 0, 0
+	finished := false
+	for !finished {
+		select {
+		case <-good:
+			goodCount++
+		case <-bad:
+			badCount++
+		case <-errChan:
+			errCount++
+		case <-quit:
+			finished = true
+		}
+	}
+	require.Equal(t, 1, goodCount)
+	require.Equal(t, 1, badCount)
+	require.Equal(t, 1, errCount)
+}
+
+func createTempCompetencies(createEmpty bool) string {
+	dir, err := ioutil.TempDir("/tmp", "compcleanertest")
+	if err != nil {
+		panic(err)
+	}
+	err = os.MkdirAll(dir+"/competencies/competencies", 0777)
+	if err != nil {
+		panic(err)
+	}
+	err = ioutil.WriteFile(dir+"/competencies/competencies/github.md", []byte("# Github Competency\ngithub is great\n## how do you prove it?\nmake a branch\n## How do you improve it?\nread the docs"), 0644)
+	if err != nil {
+		panic(err)
+	}
+	err = ioutil.WriteFile(dir+"/competencies/competencies/mentorship.md", []byte("# "), 0644)
+	if err != nil {
+		panic(err)
+	}
+	if createEmpty {
+		err = ioutil.WriteFile(dir+"/competencies/competencies/zempty.md", []byte(""), 0644)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return dir
 }
